@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { jsxDEV } from 'react/jsx-dev-runtime';
 
 const UP = 0; // create constants for easier reading
 const DOWN = 1;
@@ -10,13 +9,27 @@ function Square({ value }) { // generate square object, taken from tic tac toe t
     return <button className="square">{value}</button>;
 }
 
+function Pair(x, y) {
+  this.x = x;
+  this.y = y;
+}
+
 function getRandomOpenSquare(squares) { // get a random open square to add the new value
+  let openSquares = [];
   for (let i = 0; i < 4; i++) {
     for (let j = 0; j < 4; j++) {
-
+      if (squares[i][j] == null) {
+        openSquares.push(new Pair(i, j));
+      }
     }
   }
-  return [3, 0]; // placeholder
+  let p = openSquares[Math.floor(Math.random() * openSquares.length)]
+  if (p != null) {
+    return [p.x, p.y]; 
+  }
+  else {
+    return [null, null]; // not sure how to handle this
+  }
 }
 
 function newValue() { // return randomly either a 2 or 4, to be added when you move
@@ -273,7 +286,9 @@ export default function Board() { // board inspired by tic tac toe tutorial
       }
       let nextSquares = move(squares, dir);
       const [i, j] = getRandomOpenSquare(nextSquares);
-      nextSquares[i][j] = newValue();
+      if (i != null && j != null) {
+        nextSquares[i][j] = newValue();
+      }
       setSquares(nextSquares);
     };
     return ( // return the board object
