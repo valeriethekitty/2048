@@ -43,6 +43,7 @@ function newValue() { // return randomly either a 2 or 4, to be added when you m
 
 function move(squares, direction) { // return the new squares to move to
   let nextSquares =  Array.from({length: 4},()=> Array.from({length: 4}, () => null));
+  let moved = false;
   if (direction == UP) { // for up, it needs to count rows forward for the priority
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 4; j++) {
@@ -50,6 +51,9 @@ function move(squares, direction) { // return the new squares to move to
           let x = newPosition(nextSquares, i, j, direction);
           if (x != null) {
             nextSquares[x][j] = squares[i][j];
+            if (x != i) {
+              moved = true; // track whether or not the tiles moved
+            }
           }
         }
       }
@@ -62,6 +66,9 @@ function move(squares, direction) { // return the new squares to move to
           let x = newPosition(nextSquares, i, j, direction);
           if (x != null) {
             nextSquares[x][j] = squares[i][j];
+            if (x != i) {
+              moved = true;
+            }
           }
         }
       }
@@ -74,6 +81,9 @@ function move(squares, direction) { // return the new squares to move to
           let y = newPosition(nextSquares, i, j, direction);
           if (y != null) {
             nextSquares[i][y] = squares[i][j];
+            if (y != j) {
+              moved = true;
+            }
           }
         }
       }
@@ -86,12 +96,20 @@ function move(squares, direction) { // return the new squares to move to
           let y = newPosition(nextSquares, i, j, direction);
           if (y != null) {
             nextSquares[i][y] = squares[i][j];
+            if (y != j) {
+              moved = true;
+            }
           }
         }
       }
     }
   }
-  return nextSquares;
+  if (moved) {
+    return nextSquares;
+  }
+  else {
+    return null;
+  }
 }
 
 function newPosition(nextSquares, i, j, direction) { // return new position of square
@@ -285,11 +303,13 @@ export default function Board() { // board inspired by tic tac toe tutorial
         return;
       }
       let nextSquares = move(squares, dir);
-      const [i, j] = getRandomOpenSquare(nextSquares);
-      if (i != null && j != null) {
-        nextSquares[i][j] = newValue();
+      if (nextSquares != null) {
+        const [i, j] = getRandomOpenSquare(nextSquares);
+        if (i != null && j != null) {
+          nextSquares[i][j] = newValue();
+        }
+        setSquares(nextSquares);
       }
-      setSquares(nextSquares);
     };
     return ( // return the board object
       <>
