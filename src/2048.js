@@ -42,13 +42,15 @@ function newValue() { // return randomly either a 2 or 4, to be added when you m
 }
 
 function move(squares, direction) { // return the new squares to move to
-  let nextSquares =  Array.from({length: 4},()=> Array.from({length: 4}, () => null));
+  let nextSquares = Array.from({length: 4},()=> Array.from({length: 4}, () => null));
+  let merged = Array.from({length: 4},()=> Array.from({length: 4}, () => false));
   let moved = false;
+
   if (direction == UP) { // for up, it needs to count rows forward for the priority
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 4; j++) {
         if (squares[i][j] != null) {
-          let x = newPosition(nextSquares, i, j, direction);
+          let x = newPosition(nextSquares, squares, merged, i, j, direction);
           if (x != null) {
             nextSquares[x][j] = squares[i][j];
             if (x != i) {
@@ -63,7 +65,7 @@ function move(squares, direction) { // return the new squares to move to
     for (let i = 3; i >= 0; i--) {
       for (let j = 0; j < 4; j++) {
         if (squares[i][j] != null) {
-          let x = newPosition(nextSquares, i, j, direction);
+          let x = newPosition(nextSquares, squares, merged, i, j, direction);
           if (x != null) {
             nextSquares[x][j] = squares[i][j];
             if (x != i) {
@@ -78,7 +80,7 @@ function move(squares, direction) { // return the new squares to move to
     for (let j = 0; j < 4; j++) {
       for (let i = 0; i < 4; i++) {
         if (squares[i][j] != null) {
-          let y = newPosition(nextSquares, i, j, direction);
+          let y = newPosition(nextSquares, squares, merged, i, j, direction);
           if (y != null) {
             nextSquares[i][y] = squares[i][j];
             if (y != j) {
@@ -93,7 +95,7 @@ function move(squares, direction) { // return the new squares to move to
     for (let j = 3; j >= 0; j--) {
       for (let i = 0; i < 4; i++) {
         if (squares[i][j] != null) {
-          let y = newPosition(nextSquares, i, j, direction);
+          let y = newPosition(nextSquares, squares, merged, i, j, direction);
           if (y != null) {
             nextSquares[i][y] = squares[i][j];
             if (y != j) {
@@ -112,7 +114,7 @@ function move(squares, direction) { // return the new squares to move to
   }
 }
 
-function newPosition(nextSquares, i, j, direction) { // return new position of square
+function newPosition(nextSquares, squares, merged, i, j, direction) { // return new position of square
   if (direction == UP) { // up priority { {0, 0}, {0, 1}, {0, 2}, {0, 3} }, { {1, 0}, {1, 1}, {1, 2}, {1, 3} }, { {2, 0}, {2, 1}, {2, 2}, {2, 3} }, { {3, 0}, {3, 1}, {3, 2}, {3, 3} }
     if (i == 0) { // if i, j is top row, it does not move
       return i;
@@ -121,7 +123,12 @@ function newPosition(nextSquares, i, j, direction) { // return new position of s
       if (nextSquares[i - 1][j] == null) { // if the higher square is null, it moves there
         return i - 1; // j stays the same so just return the new i value
       }
-      else { // otherwise, it does not move
+      else { // otherwise, it does not move unless the top square matches and hasn't been merged yet
+        if (nextSquares[i - 1][j] == squares[i][j] && !merged[i - 1][j]) {
+          squares[i][j] = squares[i][j] * 2; // update value 
+          merged[i - 1][j] = true;
+          return i - 1;
+        }
         return i;
       }
     }
@@ -129,10 +136,20 @@ function newPosition(nextSquares, i, j, direction) { // return new position of s
       if (nextSquares[i - 2][j] == null) { // if the highest square is null, it moves there
         return i - 2;
       }
-      if (nextSquares[i - 1][j] == null) { // if the next highest square is null, it moves there
+      if (nextSquares[i - 1][j] == null) { // if the next highest square is null, it moves there or merges if not already merged
+        if (nextSquares[i - 2][j] == squares[i][j] && !merged[i - 2][j]) {
+          squares[i][j] = squares[i][j] * 2;
+          merged[i - 2][j] = true;
+          return i - 2;
+        }
         return i - 1;
       }
-      else { // otherwise, it does not move
+      else { // otherwise, it checks for merge, if not possible then it doesn't move
+        if (nextSquares[i - 1][j] == squares[i][j] && !merged[i - 1][j]) {
+          squares[i][j] = squares[i][j] * 2;
+          merged[i - 1][j] = true;
+          return i - 1;
+        }
         return i;
       }
     }
@@ -140,13 +157,28 @@ function newPosition(nextSquares, i, j, direction) { // return new position of s
       if (nextSquares[i - 3][j] == null) { // if the highest square is null, it moves there
         return i - 3;
       }
-      if (nextSquares[i - 2][j] == null) { // if the next highest square is null, it moves there
+      if (nextSquares[i - 2][j] == null) { // if the next highest square is null, it moves there or merges if not already merged
+        if (nextSquares[i - 3][j] == squares[i][j] && !merged[i - 3][j]) {
+          squares[i][j] = squares[i][j] * 2;
+          merged[i - 3][j] = true;
+          return i - 3;
+        }
         return i - 2;
       }
-      if (nextSquares[i - 1][j] == null) { // if the next highest square is null, it moves there
+      if (nextSquares[i - 1][j] == null) { // if the next highest square is null, it moves there or merges if not already merged
+        if (nextSquares[i - 2][j] == squares[i][j] && !merged[i - 2][j]) {
+          squares[i][j] = squares[i][j] * 2;
+          merged[i - 2][j] = true;
+          return i - 2;
+        }
         return i - 1;
       }
-      else { // otherwise, it does not move
+      else { // otherwise, it checks for merge, if not possible then it doesn't move
+        if (nextSquares[i - 1][j] == squares[i][j] && !merged[i - 1][j]) {
+          squares[i][j] = squares[i][j] * 2;
+          merged[i - 1][j] = true;
+          return i - 1;
+        }
         return i;
       }
     }
@@ -159,7 +191,12 @@ function newPosition(nextSquares, i, j, direction) { // return new position of s
       if (nextSquares[i + 1][j] == null) { // if the lower square is null, it moves there
         return i + 1; // j stays the same so just return the new i value
       }
-      else { // otherwise, it does not move
+      else { // otherwise, it does not move unless the bottom square matches and hasn't been merged yet
+        if (nextSquares[i + 1][j] == squares[i][j] && !merged[i + 1][j]) {
+          squares[i][j] = squares[i][j] * 2; // update value 
+          merged[i + 1][j] = true;
+          return i + 1;
+        }
         return i;
       }
     }
@@ -167,10 +204,20 @@ function newPosition(nextSquares, i, j, direction) { // return new position of s
       if (nextSquares[i + 2][j] == null) { // if the lowest square is null, it moves there
         return i + 2;
       }
-      if (nextSquares[i + 1][j] == null) { // if the next lowest square is null, it moves there
+      if (nextSquares[i + 1][j] == null) { // if the next lowest square is null, it moves there or merges if not already merged
+        if (nextSquares[i + 2][j] == squares[i][j] && !merged[i + 2][j]) {
+          squares[i][j] = squares[i][j] * 2;
+          merged[i + 2][j] = true;
+          return i + 2;
+        }
         return i + 1;
       }
-      else { // otherwise, it does not move
+      else { // otherwise, it checks for merge, if not possible then it doesn't move
+        if (nextSquares[i + 1][j] == squares[i][j] && !merged[i + 1][j]) {
+          squares[i][j] = squares[i][j] * 2;
+          merged[i + 1][j] = true;
+          return i + 1;
+        }
         return i;
       }
     }
@@ -179,12 +226,27 @@ function newPosition(nextSquares, i, j, direction) { // return new position of s
         return i + 3;
       }
       if (nextSquares[i + 2][j] == null) { // if the next lowest square is null, it moves there
+        if (nextSquares[i + 3][j] == squares[i][j] && !merged[i + 3][j]) {
+          squares[i][j] = squares[i][j] * 2;
+          merged[i + 3][j] = true;
+          return i + 3;
+        }
         return i + 2;
       }
       if (nextSquares[i + 1][j] == null) { // if the next lowest square is null, it moves there
+        if (nextSquares[i + 2][j] == squares[i][j] && !merged[i + 2][j]) {
+          squares[i][j] = squares[i][j] * 2;
+          merged[i + 2][j] = true;
+          return i + 2;
+        }
         return i + 1;
       }
-      else { // otherwise, it does not move
+      else { // otherwise, it checks for merge, if not possible then it doesn't move
+        if (nextSquares[i + 1][j] == squares[i][j] && !merged[i + 1][j]) {
+          squares[i][j] = squares[i][j] * 2;
+          merged[i + 1][j] = true;
+          return i + 1;
+        }
         return i;
       }
     }
@@ -197,7 +259,12 @@ function newPosition(nextSquares, i, j, direction) { // return new position of s
       if (nextSquares[i][j - 1] == null) { // if the square is null, it moves there
         return j - 1; // i stays the same so just return the new j value
       }
-      else { // otherwise, it does not move
+      else { // otherwise, it does not move unless the left square matches and hasn't been merged yet
+        if (nextSquares[i][j - 1] == squares[i][j] && !merged[i][j - 1]) {
+          squares[i][j] = squares[i][j] * 2; // update value 
+          merged[i][j - 1] = true;
+          return j - 1;
+        }
         return j;
       }
     }
@@ -205,10 +272,20 @@ function newPosition(nextSquares, i, j, direction) { // return new position of s
       if (nextSquares[i][j - 2] == null) { // if the leftmost square is null, it moves there
         return j - 2;
       }
-      if (nextSquares[i][j - 1] == null) { // if the next square is null, it moves there
+      if (nextSquares[i][j - 1] == null) { // if the next square is null, it moves there or merges if not already merged
+        if (nextSquares[i][j - 2] == squares[i][j] && !merged[i][j - 2]) {
+          squares[i][j] = squares[i][j] * 2; // update value 
+          merged[i][j - 2] = true;
+          return j - 2;
+        }
         return j - 1;
       }
-      else { // otherwise, it does not move
+      else { // otherwise, it checks for merge, if not possible then it doesn't move
+        if (nextSquares[i][j - 1] == squares[i][j] && !merged[i][j - 1]) {
+          squares[i][j] = squares[i][j] * 2; // update value 
+          merged[i][j - 1] = true;
+          return j - 1;
+        }
         return j;
       }
     }
@@ -216,13 +293,28 @@ function newPosition(nextSquares, i, j, direction) { // return new position of s
       if (nextSquares[i][j - 3] == null) { // if the leftmost square is null, it moves there
         return j - 3;
       }
-      if (nextSquares[i][j - 2] == null) { // if the next square is null, it moves there
+      if (nextSquares[i][j - 2] == null) { // if the next square is null, it moves there or merges if not already merged
+        if (nextSquares[i][j - 3] == squares[i][j] && !merged[i][j - 3]) {
+          squares[i][j] = squares[i][j] * 2; // update value 
+          merged[i][j - 3] = true;
+          return j - 3;
+        }
         return j - 2;
       }
-      if (nextSquares[i][j - 1] == null) { // if the next square is null, it moves there
+      if (nextSquares[i][j - 1] == null) { // if the next square is null, it moves there or merges if not already merged
+        if (nextSquares[i][j - 2] == squares[i][j] && !merged[i][j - 2]) {
+          squares[i][j] = squares[i][j] * 2; // update value 
+          merged[i][j - 2] = true;
+          return j - 2;
+        }
         return j - 1;
       }
-      else { // otherwise, it does not move
+      else { // otherwise, it checks for merge, if not possible then it doesn't move
+        if (nextSquares[i][j - 1] == squares[i][j] && !merged[i][j - 1]) {
+          squares[i][j] = squares[i][j] * 2; // update value 
+          merged[i][j - 1] = true;
+          return j - 1;
+        }
         return j;
       }
     }
@@ -235,7 +327,12 @@ function newPosition(nextSquares, i, j, direction) { // return new position of s
       if (nextSquares[i][j + 1] == null) { // if the square is null, it moves there
         return j + 1; // i stays the same so just return the new j value
       }
-      else { // otherwise, it does not move
+      else { // otherwise, it does not move unless the right square matches and hasn't been merged yet
+        if (nextSquares[i][j + 1] == squares[i][j] && !merged[i][j + 1]) {
+          squares[i][j] = squares[i][j] * 2; // update value 
+          merged[i][j + 1] = true;
+          return j + 1;
+        }
         return j;
       }
     }
@@ -243,10 +340,20 @@ function newPosition(nextSquares, i, j, direction) { // return new position of s
       if (nextSquares[i][j + 2] == null) { // if the rightmost square is null, it moves there
         return j + 2;
       }
-      if (nextSquares[i][j + 1] == null) { // if the next square is null, it moves there
+      if (nextSquares[i][j + 1] == null) { // if the next square is null, it moves there or merges if not already merged
+        if (nextSquares[i][j + 2] == squares[i][j] && !merged[i][j + 2]) {
+          squares[i][j] = squares[i][j] * 2; // update value 
+          merged[i][j + 2] = true;
+          return j + 2;
+        }
         return j + 1;
       }
-      else { // otherwise, it does not move
+      else { // otherwise, it checks for merge, if not possible then it doesn't move
+        if (nextSquares[i][j + 1] == squares[i][j] && !merged[i][j + 1]) {
+          squares[i][j] = squares[i][j] * 2; // update value 
+          merged[i][j + 1] = true;
+          return j + 1;
+        }
         return j;
       }
     }
@@ -254,13 +361,28 @@ function newPosition(nextSquares, i, j, direction) { // return new position of s
       if (nextSquares[i][j + 3] == null) { // if the rightmost square is null, it moves there
         return j + 3;
       }
-      if (nextSquares[i][j + 2] == null) { // if the next square is null, it moves there
+      if (nextSquares[i][j + 2] == null) { // if the next square is null, it moves there or merges if not already merged
+        if (nextSquares[i][j + 3] == squares[i][j] && !merged[i][j + 3]) {
+          squares[i][j] = squares[i][j] * 2; // update value 
+          merged[i][j + 3] = true;
+          return j + 3;
+        }
         return j + 2;
       }
-      if (nextSquares[i][j + 1] == null) { // if the next square is null, it moves there
+      if (nextSquares[i][j + 1] == null) { // if the next square is null, it moves there or merges if not already merged
+        if (nextSquares[i][j + 2] == squares[i][j] && !merged[i][j + 2]) {
+          squares[i][j] = squares[i][j] * 2; // update value 
+          merged[i][j + 2] = true;
+          return j + 2;
+        }
         return j + 1;
       }
-      else { // otherwise, it does not move
+      else { // otherwise, it checks for merge, if not possible then it doesn't move 
+        if (nextSquares[i][j + 1] == squares[i][j] && !merged[i][j + 1]) {
+          squares[i][j] = squares[i][j] * 2; // update value 
+          merged[i][j + 1] = true;
+          return j + 1;
+        }
         return j;
       }
     }
@@ -272,6 +394,7 @@ export default function Board() { // board inspired by tic tac toe tutorial
   const [squares, setSquares] = useState(Array.from({length: 4},()=> Array.from({length: 4}, () => null)));
   const [start, setStart] = useState(true);
   const [canMove, setMove] = useState(true);
+  
     if (start) { // generate the starting square randomly as either 2 or 4
       const beginningSquares = squares.slice();
       const [i, j] = getRandomOpenSquare(squares);
@@ -313,29 +436,37 @@ export default function Board() { // board inspired by tic tac toe tutorial
     };
     return ( // return the board object
       <>
-        <div className="board-row">
-          <Square value={squares[0][0]} />
-          <Square value={squares[0][1]} />
-          <Square value={squares[0][2]} />
-          <Square value={squares[0][3]} />
+        <div className="center-screen">
+          <div className="board-row">
+            <Square value={squares[0][0]} />
+            <Square value={squares[0][1]} />
+            <Square value={squares[0][2]} />
+            <Square value={squares[0][3]} />
+          </div>
         </div>
-        <div className="board-row">
-          <Square value={squares[1][0]} />
-          <Square value={squares[1][1]} />
-          <Square value={squares[1][2]} />
-          <Square value={squares[1][3]} />
+        <div className="center-screen">
+          <div className="board-row">
+            <Square value={squares[1][0]} />
+            <Square value={squares[1][1]} />
+            <Square value={squares[1][2]} />
+            <Square value={squares[1][3]} />
+          </div>
         </div>
-        <div className="board-row">
-          <Square value={squares[2][0]} />
-          <Square value={squares[2][1]} />
-          <Square value={squares[2][2]} />
-          <Square value={squares[2][3]} />
+        <div className="center-screen">
+          <div className="board-row">
+            <Square value={squares[2][0]} />
+            <Square value={squares[2][1]} />
+            <Square value={squares[2][2]} />
+            <Square value={squares[2][3]} />
+          </div>
         </div>
-        <div className="board-row">
-          <Square value={squares[3][0]} />
-          <Square value={squares[3][1]} />
-          <Square value={squares[3][2]} />
-          <Square value={squares[3][3]} />
+        <div className="center-screen">
+          <div className="board-row">
+            <Square value={squares[3][0]} />
+            <Square value={squares[3][1]} />
+            <Square value={squares[3][2]} />
+            <Square value={squares[3][3]} />
+          </div>
         </div>
       </>
     );
