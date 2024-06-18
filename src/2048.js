@@ -54,6 +54,7 @@ function move(squares, direction) { // return the new squares to move to
           if (x != null) {
             nextSquares[x][j] = squares[i][j];
             if (x != i) {
+              console.log("movedup");
               moved = true; // track whether or not the tiles moved
             }
           }
@@ -69,6 +70,7 @@ function move(squares, direction) { // return the new squares to move to
           if (x != null) {
             nextSquares[x][j] = squares[i][j];
             if (x != i) {
+              console.log("moveddown");
               moved = true;
             }
           }
@@ -84,6 +86,7 @@ function move(squares, direction) { // return the new squares to move to
           if (y != null) {
             nextSquares[i][y] = squares[i][j];
             if (y != j) {
+              console.log("movedleft");
               moved = true;
             }
           }
@@ -99,6 +102,7 @@ function move(squares, direction) { // return the new squares to move to
           if (y != null) {
             nextSquares[i][y] = squares[i][j];
             if (y != j) {
+              console.log("movedright");
               moved = true;
             }
           }
@@ -390,10 +394,45 @@ function newPosition(nextSquares, squares, merged, i, j, direction) { // return 
   return null;
 }
 
+function checkStatus(squares, won, prev) {
+  for (let i = 0; i < 3; i++) {
+    for(let j = 0; j < 3; j++) {
+      console.log(i, " ", j, ": ", "curr: ", squares[i][j], "prev: ", prev[i][j]);
+    }
+  }
+  let squares1 = squares;
+  let squares2 = squares;
+  let squares3 = squares;
+  let squares4 = squares;
+  if (move(squares1, UP) == null && move(squares2, DOWN) == null && move(squares3, LEFT) == null && move(squares4, RIGHT) == null) {
+    console.log("test");
+    for (let i = 0; i < 3; i++) {
+      for(let j = 0; j < 3; j++) {
+        console.log(i, " ", j, ": ", "curr: ", squares[i][j], "prev: ", prev[i][j]);
+      }
+    }
+    return null; // do not keep playing if can't move in any direction
+  }
+  for (let i = 0; i < 3; i++) {
+    for(let j = 0; j < 3; j++) {
+      console.log(i, " ", j, ": ", "curr: ", squares[i][j], "prev: ", prev[i][j]);
+    }
+  }
+  if (!won) { // if no win yet, check for win
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 4; j++) {
+        if (squares[i][j] == 2048) {
+          return true;
+        }
+      }
+    }
+  }
+  return false; // keep playing, no win yet
+}
+
 export default function Board() { // board inspired by tic tac toe tutorial
   const [squares, setSquares] = useState(Array.from({length: 4},()=> Array.from({length: 4}, () => null)));
   const [start, setStart] = useState(true);
-  const [canMove, setMove] = useState(true);
   
     if (start) { // generate the starting square randomly as either 2 or 4
       const beginningSquares = squares.slice();
@@ -404,6 +443,9 @@ export default function Board() { // board inspired by tic tac toe tutorial
     }
     // squares, onPlay
     // onPlay(next);
+    let won = false; 
+    let status = false;
+
     document.onkeydown = (e) => { // control what happens when keys are hit
       let dir;
       if (e.code === "ArrowUp" || e.code === "KeyW") {
@@ -434,6 +476,21 @@ export default function Board() { // board inspired by tic tac toe tutorial
         setSquares(nextSquares);
       }
     };
+    status = checkStatus(squares, won, squares); // check for win/loss
+    if (status == null) { // show proper buttons
+      console.log("null");
+      document.getElementById("restartbutton").setAttribute("class", "button button1");
+    }
+    else if (status == true) {
+      console.log("true");
+      document.getElementById("restartbutton2").setAttribute("class", "button button1");
+      document.getElementById("keepgoingbutton").setAttribute("class", "button button1");
+    }
+    else if (status == false) { // hide all buttons
+      document.getElementById("restartbutton").setAttribute("class", "button button1 hidden");
+      document.getElementById("restartbutton2").setAttribute("class", "button button1 hidden");
+      document.getElementById("keepgoingbutton").setAttribute("class", "button button1 hidden");
+    }
     return ( // return the board object
       <>
         <div className="center-screen">

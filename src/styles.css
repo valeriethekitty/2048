@@ -70,6 +70,14 @@ body {
   position: relative;
 }
 
+.button1 {
+  font-size: 16px;
+}
+
+.hidden {
+  display: none;
+}
+
 .square {
   background: #fff;
   border: 1px solid #999;
