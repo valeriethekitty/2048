@@ -394,46 +394,48 @@ function newPosition(nextSquares, squares, merged, i, j, direction) { // return 
   return null;
 }
 
-function checkStatus(squares, won, prev) {
-  for (let i = 0; i < 3; i++) {
-    for(let j = 0; j < 3; j++) {
-      console.log(i, " ", j, ": ", "curr: ", squares[i][j], "prev: ", prev[i][j]);
-    }
-  }
-  let squares1 = squares;
-  let squares2 = squares;
-  let squares3 = squares;
-  let squares4 = squares;
-  if (move(squares1, UP) == null && move(squares2, DOWN) == null && move(squares3, LEFT) == null && move(squares4, RIGHT) == null) {
-    console.log("test");
-    for (let i = 0; i < 3; i++) {
-      for(let j = 0; j < 3; j++) {
-        console.log(i, " ", j, ": ", "curr: ", squares[i][j], "prev: ", prev[i][j]);
-      }
-    }
-    return null; // do not keep playing if can't move in any direction
-  }
-  for (let i = 0; i < 3; i++) {
-    for(let j = 0; j < 3; j++) {
-      console.log(i, " ", j, ": ", "curr: ", squares[i][j], "prev: ", prev[i][j]);
-    }
-  }
+function checkStatus(squares, won) {
+  console.log("in check status");
+  // let squares1 = squares;
+  // let squares2 = squares;
+  // let squares3 = squares;
+  // let squares4 = squares;
+  // let up = move(squares1, UP);
+  // let down = move(squares2, DOWN);
+  // let left = move(squares3, LEFT);
+  // let right = move(squares4, RIGHT);
+  // if (up == null && down == null && left == null && right == null) {
+  //   return null; // do not keep playing if can't move in any direction
+  // }
+  // if (up != null) {
+  //    console.log("can move up");
+  // }
+  // if (down != null) {
+  //   console.log("can move down");
+  // }
+  // if (left != null) {
+  //   console.log("can move left");
+  // }
+  // if (right != null) {
+  //   console.log("can move right");
+  // }
   if (!won) { // if no win yet, check for win
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 4; j++) {
+        console.log(squares[i][j], i, j);
         if (squares[i][j] == 2048) {
           return true;
         }
       }
     }
   }
+  console.log("out of check status");
   return false; // keep playing, no win yet
 }
 
 export default function Board() { // board inspired by tic tac toe tutorial
   const [squares, setSquares] = useState(Array.from({length: 4},()=> Array.from({length: 4}, () => null)));
   const [start, setStart] = useState(true);
-  
     if (start) { // generate the starting square randomly as either 2 or 4
       const beginningSquares = squares.slice();
       const [i, j] = getRandomOpenSquare(squares);
@@ -441,10 +443,16 @@ export default function Board() { // board inspired by tic tac toe tutorial
       setSquares(beginningSquares);
       setStart(false);
     }
-    // squares, onPlay
-    // onPlay(next);
+ 
     let won = false; 
     let status = false;
+
+    function restart() {
+      setSquares(Array.from({length: 4},()=> Array.from({length: 4}, () => null)));
+      setStart(true);
+      won = false;
+      status = false;
+    }
 
     document.onkeydown = (e) => { // control what happens when keys are hit
       let dir;
@@ -476,7 +484,59 @@ export default function Board() { // board inspired by tic tac toe tutorial
         setSquares(nextSquares);
       }
     };
-    status = checkStatus(squares, won, squares); // check for win/loss
+    status = checkStatus(squares, won); // check for win/loss
+    let squares1 = Array.from({length: 4},()=> Array.from({length: 4}, () => null));
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 4; j++) { 
+        squares1[i][j] = squares[i][j];
+      }
+    }
+    let squares2 = Array.from({length: 4},()=> Array.from({length: 4}, () => null));
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 4; j++) { 
+        squares2[i][j] = squares[i][j];
+      }
+    }
+    let squares3 = Array.from({length: 4},()=> Array.from({length: 4}, () => null));
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 4; j++) { 
+        squares3[i][j] = squares[i][j];
+      }
+    }
+    let squares4 = Array.from({length: 4},()=> Array.from({length: 4}, () => null));
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 4; j++) { 
+        squares4[i][j] = squares[i][j];
+      }
+    }
+    let up = move(squares1, UP);
+    // if (up != null) {
+    //   for (let i = 0; i < 4; i++) {
+    //       console.log(squares[i][0], squares[i][1], squares[i][2], squares[i][3]);
+    //   }
+    //   console.log("break");
+    //   for (let i = 0; i < 4; i++) {
+    //     console.log(up[i][0], up[i][1], up[i][2], up[i][3]);
+    //   }
+    // }
+    let down = move(squares2, DOWN, false);
+    let left = move(squares3, LEFT, false);
+    let right = move(squares4, RIGHT, false);
+    if (up == null && down == null && left == null && right == null) {
+       status = null; // do not keep playing if can't move in any direction
+    }
+    if (up != null) {
+       console.log(up, "can move up");
+    }
+    if (down != null) {
+      console.log(down, "can move down");
+    }
+    if (left != null) {
+      console.log(left, "can move left");
+    }
+    if (right != null) {
+      console.log(right, "can move right");
+    }
     if (status == null) { // show proper buttons
       console.log("null");
       document.getElementById("restartbutton").setAttribute("class", "button button1");
@@ -487,6 +547,7 @@ export default function Board() { // board inspired by tic tac toe tutorial
       document.getElementById("keepgoingbutton").setAttribute("class", "button button1");
     }
     else if (status == false) { // hide all buttons
+      console.log("false");
       document.getElementById("restartbutton").setAttribute("class", "button button1 hidden");
       document.getElementById("restartbutton2").setAttribute("class", "button button1 hidden");
       document.getElementById("keepgoingbutton").setAttribute("class", "button button1 hidden");
@@ -524,6 +585,9 @@ export default function Board() { // board inspired by tic tac toe tutorial
             <Square value={squares[3][2]} />
             <Square value={squares[3][3]} />
           </div>
+        </div>
+        <div className="center-screen">
+            <button className="button button1 hidden" id="restartbutton" onClick={restart}>restart</button>
         </div>
       </>
     );
